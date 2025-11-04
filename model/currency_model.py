@@ -1,6 +1,6 @@
-# ==============================================================================
+
 # CURRENCY MODEL - Handles API data, rates, and logic
-# ==============================================================================
+
 
 import requests
 from datetime import datetime
