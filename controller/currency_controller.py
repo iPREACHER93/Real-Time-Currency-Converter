@@ -1,7 +1,6 @@
 
-# ==============================================================================
 # CURRENCY CONTROLLER - Connects Model ↔ View and handles logic
-# ==============================================================================
+
 
 class CurrencyController:
     """Controller: Manages interactions between Model and View"""
