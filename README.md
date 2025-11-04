@@ -255,7 +255,7 @@ Author
 
 **Your Name**
 - GitHub: [iPREACHER93](https://github.com/iPREACHER93)
-- Email: your.email@example.com
+- Email: amamre93@gmail.com
 
 Acknowledgments
 
