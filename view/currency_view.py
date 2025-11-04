@@ -12,7 +12,7 @@ class CurrencyView:
 
     def __init__(self, root):
         self.root = root
-        self.root.title("💱 Cellusys Build Up Currency Converter")
+        self.root.title("Cellusys Build Up Currency Converter")
         self.root.geometry("950x720")
         self.root.minsize(600, 550)
         self.root.configure(bg="#0a2342")
