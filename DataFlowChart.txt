@@ -1,0 +1,77 @@
+DATA FLOW DIAGRAM (Level 1) — Build Up Currency Converter
+                ┌──────────────────────────────────────────┐
+                │               USER (Actor)               │
+                │──────────────────────────────────────────│
+                │ • Enters amount                          │
+                │ • Selects currencies                     │
+                │ • Clicks "Convert Now" / "Swap"          │
+                └──────────────────────────────────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │        VIEW (UI Layer)        │
+                   │  CurrencyView (Tkinter GUI)   │
+                   │──────────────────────────────│
+                   │ • Displays input fields       │
+                   │ • Shows conversion results    │
+                   │ • Handles user events         │
+                   └──────────────────────────────┘
+                                 │  (user input)
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │     CONTROLLER (Logic)        │
+                   │ CurrencyController            │
+                   │──────────────────────────────│
+                   │ • Validates user inputs       │
+                   │ • Coordinates between         │
+                   │   View ↔ Model                │
+                   │ • Calls Model.fetch_rates()   │
+                   │ • Performs conversion         │
+                   │ • Updates View with results   │
+                   └──────────────────────────────┘
+                                 │  (API request trigger)
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │       MODEL (Data Layer)      │
+                   │      CurrencyModel            │
+                   │──────────────────────────────│
+                   │ • Fetches data from API       │
+                   │ • Stores exchange rates       │
+                   │ • Performs calculations       │
+                   │ • Handles error logic         │
+                   └──────────────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │        ExchangeRate-API Server        │
+               │──────────────────────────────────────│
+               │  • Returns JSON with live rates       │
+               │  e.g., { "base":"USD", "rates":{...}} │
+               └──────────────────────────────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │          MODEL               │
+                   │ (Parses API response, stores │
+                   │   exchange rates locally)    │
+                   └──────────────────────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │          CONTROLLER           │
+                   │ (Computes converted amount &  │
+                   │   rate summary)               │
+                   └──────────────────────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │             VIEW              │
+                   │ (Displays final conversion,   │
+                   │  rate, and result message)    │
+                   └──────────────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────────┐
+               │                USER                      │
+               │ (Sees converted value & may repeat input)│
+               └──────────────────────────────────────────┘
