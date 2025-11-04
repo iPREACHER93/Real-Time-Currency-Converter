@@ -254,7 +254,7 @@ in the Software without restriction...
 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
+- GitHub: [iPREACHER93](https://github.com/iPREACHER93)
 - Email: your.email@example.com
 
 Acknowledgments
