@@ -1,17 +1,27 @@
+# ============================================================================
+# FILE 2: model/currency_model.py
+# ============================================================================
 
-# CURRENCY MODEL - Handles API data, rates, and logic
+"""
+Currency Model - Handles API data, rates, and business logic with offline support
+"""
 
 import requests
 from datetime import datetime
+import json
+import os
+
 
 class CurrencyModel:
-    """Model: Handles data and business logic"""
+    """Model: Handles data and business logic with offline mode"""
 
     def __init__(self):
         self.api_url = "https://api.exchangerate-api.com/v4/latest/"
         self.rates = {}
         self.base_currency = "USD"
         self.last_updated = None
+        self.is_offline = False
+        self.cache_file = "currency_rates_cache.json"
 
         # Currency display names
         self.currency_names = {
@@ -35,8 +45,38 @@ class CurrencyModel:
             'BDT': 'Bangladeshi Taka', 'LKR': 'Sri Lankan Rupee', 'NPR': 'Nepalese Rupee'
         }
 
+    def save_rates_to_cache(self):
+        """Save current rates to local cache file"""
+        try:
+            cache_data = {
+                'rates': self.rates,
+                'base_currency': self.base_currency,
+                'last_updated': self.last_updated
+            }
+            with open(self.cache_file, 'w') as f:
+                json.dump(cache_data, f)
+            print("[CACHE] Rates saved to cache")
+        except Exception as e:
+            print(f"[CACHE ERROR] Could not save cache: {e}")
+
+    def load_rates_from_cache(self):
+        """Load rates from local cache file"""
+        try:
+            if os.path.exists(self.cache_file):
+                with open(self.cache_file, 'r') as f:
+                    cache_data = json.load(f)
+                self.rates = cache_data['rates']
+                self.base_currency = cache_data['base_currency']
+                self.last_updated = cache_data['last_updated']
+                self.is_offline = True
+                print("[CACHE] Loaded rates from cache (Offline Mode)")
+                return True
+        except Exception as e:
+            print(f"[CACHE ERROR] Could not load cache: {e}")
+        return False
+
     def fetch_rates(self, base: str = "USD") -> bool:
-        """Fetch latest currency rates from API and update model state"""
+        """Fetch latest currency rates from API with offline fallback"""
         try:
             response = requests.get(f"{self.api_url}{base}", timeout=10)
             response.raise_for_status()
@@ -48,21 +88,31 @@ class CurrencyModel:
             self.rates = data["rates"]
             self.base_currency = base
             self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.is_offline = False
+            
+            # Save to cache for offline use
+            self.save_rates_to_cache()
+            
+            print("[API] Rates fetched successfully (Online Mode)")
             return True
 
         except (requests.RequestException, ValueError) as e:
             print(f"[API ERROR] Could not fetch rates: {e}")
+            
+            # Try loading from cache
+            if self.load_rates_from_cache():
+                return True
+            
             self.rates = {}
             return False
 
     def get_rate(self, from_curr: str, to_curr: str) -> float:
-        """Get exchange rate between two currencies - FIXED METHOD"""
+        """Get exchange rate between two currencies"""
         if not self.rates:
             print("[WARNING] No rates available")
             return None
         
         try:
-            # Both currencies must exist in rates
             if from_curr not in self.rates and from_curr != self.base_currency:
                 print(f"[ERROR] Unknown currency: {from_curr}")
                 return None
@@ -71,7 +121,6 @@ class CurrencyModel:
                 print(f"[ERROR] Unknown currency: {to_curr}")
                 return None
             
-            # Calculate rate: from_curr -> USD -> to_curr
             if from_curr == self.base_currency:
                 rate = self.rates[to_curr]
             else:
@@ -97,15 +146,9 @@ class CurrencyModel:
         else:
             available = self.currency_names.keys()
         
-        # Return formatted list: "USD - US Dollar"
         formatted_list = []
         for code in sorted(available):
             name = self.currency_names.get(code, code)
             formatted_list.append(f"{code} - {name}")
         
         return formatted_list
-
-    def get_currency_display_name(self, code: str) -> str:
-        """Return formatted currency display name"""
-        name = self.currency_names.get(code, code)
-        return f"{code} - {name}"

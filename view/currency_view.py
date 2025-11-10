@@ -1,14 +1,19 @@
 
+# ============================================================================
+# FILE 5: view/currency_view.py
+# ============================================================================
 
-# CURRENCY VIEW - UI Components
-
+"""
+Currency View - Main UI components with loading spinner
+"""
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+import math
 
 
 class CurrencyView:
-    """View: Elegant, Responsive, with  Navigation Bar"""
+    """View: Elegant, Responsive UI with Navigation Bar and Loading Spinner"""
 
     def __init__(self, root):
         self.root = root
@@ -20,6 +25,10 @@ class CurrencyView:
         self.current_size = "large"
         self.active_tab = "Convert"
         self.root.bind('<Configure>', self.on_window_resize)
+        
+        # Spinner animation variables
+        self.spinner_active = False
+        self.spinner_angle = 0
 
         self.setup_styles()
         self.create_widgets()
@@ -214,10 +223,19 @@ class CurrencyView:
         )
         self.swap_btn.grid(row=1, column=1, padx=10)
 
-        # Result Section
+        # Result Section with Spinner Canvas
         result_frame = tk.Frame(content, bg="#f6fbff", relief="groove", bd=1)
         result_frame.pack(pady=20, fill="x")
 
+        # Spinner Canvas (hidden by default)
+        self.spinner_canvas = tk.Canvas(
+            result_frame,
+            width=50,
+            height=50,
+            bg="#f6fbff",
+            highlightthickness=0
+        )
+        
         self.result_label = tk.Label(
             result_frame,
             text="Enter amount and press Convert",
@@ -252,6 +270,52 @@ class CurrencyView:
             bg="white"
         )
         self.status_label.pack(side="bottom", pady=5)
+
+    def show_spinner(self):
+        """Show and animate the loading spinner"""
+        self.spinner_active = True
+        self.result_label.pack_forget()
+        self.rate_label.pack_forget()
+        self.spinner_canvas.pack(pady=15)
+        self.animate_spinner()
+
+    def hide_spinner(self):
+        """Hide the spinner and show results"""
+        self.spinner_active = False
+        self.spinner_canvas.pack_forget()
+        self.result_label.pack(pady=15)
+        self.rate_label.pack(pady=(0, 10))
+
+    def animate_spinner(self):
+        """Animate the rotating spinner"""
+        if not self.spinner_active:
+            return
+        
+        self.spinner_canvas.delete("all")
+        
+        # Draw rotating spinner
+        center_x, center_y = 25, 25
+        radius = 15
+        
+        for i in range(8):
+            angle = math.radians(self.spinner_angle + (i * 45))
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+            
+            # Fade effect
+            opacity = 255 - (i * 30)
+            color = f'#{opacity:02x}{opacity:02x}ff'
+            
+            self.spinner_canvas.create_oval(
+                x - 3, y - 3, x + 3, y + 3,
+                fill=color, outline=""
+            )
+        
+        self.spinner_angle += 15
+        if self.spinner_angle >= 360:
+            self.spinner_angle = 0
+        
+        self.root.after(50, self.animate_spinner)
 
     def on_nav_hover(self, btn):
         if btn.cget("text") != self.active_tab:
